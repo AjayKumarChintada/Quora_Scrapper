@@ -26,6 +26,9 @@ def extract_related_answers(filename):
 
     elements = soup.find_all('div','Card___StyledBackroundTemporaryHighlightBoxChild-qc006b-0')
     filtered_elements  = [i for i in elements if 'dom_annotate_question_answer_item' in str(i)]
+    # print(len(filtered_elements),'filtered...')
+    # profile = soup.find_all('a',class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-color--gray_dark qu-cursor--pointer qu-hover--textDecoration--underline')
+    # print(len(profile),'profiles')
 
     with open(SCRAPED_DATA_DB,'a') as file:
         for each_element in filtered_elements:
@@ -36,22 +39,38 @@ def extract_related_answers(filename):
 
                 links = each_element.find_all('a', class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-display--inline qu-cursor--pointer qu-hover--textDecoration--underline')
                 hrefs = [link['href'] for link in links][0]
-                print(hrefs)
+                # print(hrefs)
 
                 answers = each_element.find('div', class_ = 'q-box spacing_log_answer_content puppeteer_test_answer_content').text
                 answers = answers.replace(',','')
 
                 image_data = each_element.find_all('img')
                 img_srcs = [link['src'] for link in image_data if 'main-thumb' not in str(link)]
-                print(img_srcs)
+                # print(img_srcs)
+                print('searching for name: ')
+
+                profile_name = each_element.find('a',class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-color--gray_dark qu-cursor--pointer qu-hover--textDecoration--underline')
+            
+                print(profile_name.text)
+                print(profile_name['href'])
+                
 
                 images = ' | '.join(img_srcs)
+
+                
+
                 # print(long_text)
-                file.write(f'{question},{hrefs},{images},{answers}\n')
+                
+                # profile_name = [i.text for i in profile]
+                # profile_url = [i['href'] for i in profile]
+
+                # file.write(f'{question},{hrefs},{images},{answers}\n')
+                # print(f'{question},{hrefs},{images},{answers}\n')
 
 
             except Exception:
-                print('Related scraping Exception:::--',Exception)
+                # print('Related scraping Exception:::--',Exception)
+                pass
                             
                 
 
@@ -93,4 +112,15 @@ def extract_answers(answer_html_filename,url):
 
 
 # get_link_answer('answer_What-is-the-purpose-of-taking-off-your-shoes-before-entering-an-LDS-Temple.html','------+++')
-# extract_related_answers('related_What-is-the-purpose-of-taking-off-your-shoes-before-entering-an-LDS-Temple.html')
+extract_related_answers('a.html')
+# import os
+
+# directory = 'html_pages'
+# pages = os.listdir(directory)[:2]
+
+# for page in pages:
+#     # Get the full path of the file
+#     path = os.path.join(directory, page)
+#     extract_related_answers(path)
+
+#     # print()
