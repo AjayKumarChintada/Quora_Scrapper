@@ -11,7 +11,7 @@ if os.path.exists(SCRAPED_DATA_DB):
     print("File exists!")
 else:
     with open(SCRAPED_DATA_DB,'w') as file:
-        file.write('question,link,images,answers\n')
+        file.write('question,link,images,answers,username,userlink\n')
     print(f"File does not exist so creating {SCRAPED_DATA_DB}...")
 
 
@@ -49,22 +49,16 @@ def extract_related_answers(filename):
                 # print(img_srcs)
                 print('searching for name: ')
 
-                profile_name = each_element.find('a',class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-color--gray_dark qu-cursor--pointer qu-hover--textDecoration--underline')
+                profile = each_element.find('a',class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-color--gray_dark qu-cursor--pointer qu-hover--textDecoration--underline')
             
-                print(profile_name.text)
-                print(profile_name['href'])
+                # print(profile_name.text)
+                profile_name = profile.text.strip().replace(',',' ')
+                profile_url = profile['href'].strip().replace(',',' ')
                 
-
                 images = ' | '.join(img_srcs)
-
                 
+                file.write(f'{question},{hrefs},{images},{answers},{profile_name},{profile_url}\n')
 
-                # print(long_text)
-                
-                # profile_name = [i.text for i in profile]
-                # profile_url = [i['href'] for i in profile]
-
-                # file.write(f'{question},{hrefs},{images},{answers}\n')
                 # print(f'{question},{hrefs},{images},{answers}\n')
 
 
@@ -101,26 +95,15 @@ def extract_answers(answer_html_filename,url):
                 img_srcs = [link['src'] for link in image_data if 'main-thumb' not in str(link)]
                 # print(img_srcs)
                 images = ' | '.join(img_srcs)
-                # print(long_text)
-                file.write(f'{question},{href},{images},{answers}\n')
+                print('searching for name: ')
+                profile = each_element.find('a',class_ = 'q-box Link___StyledBox-t2xg9c-0 dFkjrQ puppeteer_test_link qu-color--gray_dark qu-cursor--pointer qu-hover--textDecoration--underline')
+                profile_name = profile.text.strip().replace(',',' ')
+                profile_url = profile['href'].strip().replace(',',' ')
+
+                file.write(f'{question},{href},{images},{answers},{profile_name},{profile_url}\n')
+
+                
 
             except Exception:
                 print('Answer scraping Exception:::--',Exception)
                 
-
-
-
-
-# get_link_answer('answer_What-is-the-purpose-of-taking-off-your-shoes-before-entering-an-LDS-Temple.html','------+++')
-extract_related_answers('a.html')
-# import os
-
-# directory = 'html_pages'
-# pages = os.listdir(directory)[:2]
-
-# for page in pages:
-#     # Get the full path of the file
-#     path = os.path.join(directory, page)
-#     extract_related_answers(path)
-
-#     # print()

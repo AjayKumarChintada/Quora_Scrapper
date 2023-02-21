@@ -1,4 +1,5 @@
 import time
+import concurrent.futures
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.action_chains import ActionChains
@@ -6,18 +7,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 from db_dump import *
 
 
 def save_html_pages(quora_url):
 
     try:
-
+        options = Options()
+        options.headless = True
         chrome_driver_path = './chromedriver_mac64/chromedriver'
         service = ChromeService(executable_path=chrome_driver_path)
 
         # create a new Chrome session
-        driver = webdriver.Chrome(service=service)
+        driver = webdriver.Chrome(service=service,options=options)
 
         # navigate to the Quora website
         driver.get(quora_url)
@@ -44,10 +47,10 @@ def save_html_pages(quora_url):
         for ele in elements:
             print(ele.text)
             actions.move_to_element(ele)
-            print('Continue read clicked....')
+            # print('Continue read clicked....')
             actions.click()
             actions.perform()
-        url = quora_url.split('https://www.quora.com/')[-1]
+        url = quora_url.split('https://www.quora.com/')[-1].strip()
         ## RELATED ANSWERS WRITTEN TO FILE
         related_answers_file = f'related_{url}.html'
         # print(related_answers_file)
@@ -86,19 +89,44 @@ def save_html_pages(quora_url):
         driver.quit()
     except Exception:
         print('Look at this exception please....',Exception)
+        print(f'cannot do for url:  {url}')
+        with open('failed.txt','a') as failedfile:
+            failedfile.write(url+'\n')
 
+
+'''
+# def main():
+#     with open('trailurls.txt') as file:
+#         urls = file.readlines()
+#     for url in urls:    
+#         try:
+#             print('Processing : ',url)
+#             save_html_pages(url)
+#         except:
+#             print(f'cannot do for url:  {url}')
+            
+# main()
+
+'''
+
+
+def process_url(url):
+    try:
+        print('Processing: ', url)
+        save_html_pages(url)
+    except Exception as e:
+        print(f'Cannot process URL: {url}. Error: {e}')
 
 
 def main():
-    with open('trailurls.txt') as file:
+    with open('topic_urls.txt') as file:
         urls = file.readlines()
-    for url in urls:    
-        try:
-            print('Processing : ',url)
-            save_html_pages(url)
-        except:
-            print(f'cannot do for url:  {url}')
-            with open('failed.txt','a') as failedfile:
-                failedfile.write(url+'\n')
-    # save_html_pages('https://www.quora.com/Why-do-more-people-visit-Tirupati-Balaji-Temple-than-other-Hindu-temples')
-main()
+        
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = [executor.submit(process_url, url.strip()) for url in urls]
+        for result in concurrent.futures.as_completed(results):
+            if result.exception():
+                print(result.exception())
+
+if __name__ == '__main__':
+    main()
